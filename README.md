@@ -1,2 +1,2 @@
 # Raspberry_Gemini
-Raspberry and Gemini
+raspberry+python+gemini智慧開發
