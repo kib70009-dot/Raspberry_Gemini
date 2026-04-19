@@ -40,30 +40,24 @@ class Filter:
         # inlet 是進入點（pre-processing），用來在請求被送到後端之前檢查或修改內容。
         # body: API 請求的原始資料
         # __user__: 代表當前使用者資料，通常包含角色(role)和自訂閥值(valves)
-        print(f"inlet:{__name__}")
-        print(f"inlet:body:{body}")
-        print(f"inlet:user:{__user__}")
-
-        # 如果使用者角色是 user 或 admin，就套用對話輪數限制
-        if __user__.get("role", "admin") in ["user", "admin"]:
-            messages = body.get("messages", [])
-
-            # 取系統設定和使用者設定之中較低的限制
-            max_turns = min(__user__["valves"].max_turns, self.valves.max_turns)
-            if len(messages) > max_turns:
-                # 超過上限時，直接丟出例外中斷處理
-                raise Exception(
-                    f"Conversation turn limit exceeded. Max turns: {max_turns}"
-                )
-
-        # 經過驗證後，回傳原始請求內容
+        
+        # 取得使用者的輸入內容（通常是 messages 中的最後一條訊息）
+        messages = body.get("messages", [])
+        if messages:
+            user_input = messages[-1].get("content", "")
+            print(f"使用者輸入: {user_input}")
         return body
 
     def outlet(self, body: dict, __user__: Optional[dict] = None) -> dict:
         # outlet 是離開點（post-processing），在 API 處理完成後可用來檢查或修改回應內容。
-        print(f"outlet:{__name__}")
-        print(f"outlet:body:{body}")
-        print(f"outlet:user:{__user__}")
-
-        # 這裡目前沒有更動回應資料，直接回傳原始 body
+        
+        # 取得模型輸出的內容（通常在 choices[0].message.content 中）
+        choices = body.get("choices", [])
+        if choices:
+            model_output = choices[0].get("message", {}).get("content", "")
+            print(f"模型輸出: {model_output}")
+            # 修改內容，加上 "天天開心"
+            choices[0]["message"]["content"] = model_output + "天天開心"
+        
+        # 回傳修改後的 body
         return body
